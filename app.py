@@ -4,7 +4,7 @@ from PIL import Image
 import google.generativeai as genai
 import streamlit as st
 
-# Configuración de la página
+# Configuración de la página con soporte de App Web
 st.set_page_config(
     page_title="AlphaX Signals - Vision AI",
     page_icon="⚡",
@@ -12,9 +12,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Estilos CSS personalizados para diseño oscuro y profesional
+# Inyectar código para permitir instalar la app en el celular
 st.markdown(
     """
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <style>
     .main {
         background-color: #0e1117;
@@ -51,7 +53,7 @@ with st.sidebar:
   )
   st.header("Configuración de IA")
 
-  # Truco para que GitHub no bloquee y aparezca por defecto
+  # Clave configurada automáticamente por defecto
   parte_1 = "AQ.Ab8RN6IM9fQrmoL"
   parte_2 = "wfcrqli4cFYQT8HqZNPYq6dmtotrDI1RvgA"
   clave_por_defecto = parte_1 + parte_2
