@@ -1,65 +1,18 @@
+import base64
 from datetime import datetime, timedelta
 import time
-from PIL import Image
-import google.generativeai as genai
+from openai import OpenAI  # Importamos la librería de OpenAI
 import streamlit as st
 
-# Configuración de la página con soporte de App Web
-st.set_page_config(
-    page_title="AlphaX Signals - Vision AI",
-    page_icon="⚡",
-    layout="centered",
-    initial_sidebar_state="expanded",
-)
-
-# Inyectar código para permitir instalar la app en el celular
-st.markdown(
-    """
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <style>
-    .main {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    .stButton>button {
-        width: 100%;
-        background: linear-gradient(90deg, #ff9900 0%, #ff5500 100%);
-        color: white;
-        font-weight: bold;
-        border-radius: 8px;
-        padding: 10px;
-        border: none;
-    }
-    .stButton>button:hover {
-        background: linear-gradient(90deg, #ffaa00 0%, #ff6600 100%);
-    }
-    .signal-card {
-        background-color: #161b22;
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #30363d;
-        margin-top: 20px;
-    }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
+# ... (mantén toda la configuración de la página y los estilos que ya tienes) ...
 
 # Barra lateral para configuración
 with st.sidebar:
-  st.image(
-      "https://img.icons8.com/fluency/96/artificial-intelligence.png", width=60
-  )
-  st.header("Configuración de IA")
+  st.header("Configuración de OpenAI")
 
-  # Clave configurada automáticamente por defecto
-  parte_1 = "AQ.Ab8RN6IM9fQrmoL"
-  parte_2 = "wfcrqli4cFYQT8HqZNPYq6dmtotrDI1RvgA"
-  clave_por_defecto = parte_1 + parte_2
-
+  # Cambiamos el campo para pedir la API Key de OpenAI
   api_key = st.text_input(
-      "Ingresa tu Gemini API Key", value=clave_por_defecto, type="password"
+      "Ingresa tu OpenAI API Key", type="password", placeholder="sk-..."
   )
 
   st.markdown("---")
@@ -87,8 +40,8 @@ with st.sidebar:
   )
 
 # Contenido Principal
-st.title("⚡ AlphaX Signals")
-st.markdown("### Sistema de Análisis de Gráficos con Vision AI")
+st.title("⚡ AlphaX Signals - ChatGPT Version")
+st.markdown("### Sistema de Análisis de Gráficos con OpenAI Vision")
 
 # Subir imagen del gráfico
 uploaded_file = st.file_uploader(
@@ -103,19 +56,22 @@ if use_camera:
 image_to_process = uploaded_file if uploaded_file else camera_image
 
 if image_to_process:
-  image = Image.open(image_to_process)
-  st.image(image, caption="Gráfico cargado para análisis", use_container_width=True)
+  # Convertir la imagen a formato base64 para enviarla a la API de OpenAI
+  bytes_data = image_to_process.getvalue()
+  base64_image = base64.b64encode(bytes_data).decode("utf-8")
+
+  st.image(image_to_process, caption="Gráfico cargado para análisis", use_container_width=True)
 
   if st.button("⚡ GET SIGNAL / ANALIZAR GRÁFICO"):
     if not api_key:
-      st.error("⚠️ Falta la API Key.")
+      st.error("⚠️ Falta la API Key de OpenAI.")
     else:
-      with st.spinner("🧠 Analizando patrones de velas, soportes y resistencias..."):
+      with st.spinner("🧠 Analizando patrones de velas con ChatGPT..."):
         try:
-          genai.configure(api_key=api_key)
-          model = genai.GenerativeModel("gemini-1.5-flash")
+          # Inicializar cliente de OpenAI
+          client = OpenAI(api_key=api_key)
 
-          prompt = (
+          prompt_text = (
               "Actúa como un trader profesional experto en opciones binarias"
               " (Quotex). Analiza detalladamente este gráfico de trading"
               " adjunto. Identifica la tendencia actual, los niveles"
@@ -126,11 +82,31 @@ if image_to_process:
               " 88%). 3. Breve fundamento técnico de 1 sola línea."
           )
 
-          response = model.generate_content([prompt, image])
-          analisis_ia = response.text
+          # Llamada al modelo con soporte de visión (gpt-4o)
+          response = client.chat.completions.create(
+              model="gpt-4o",
+              messages=[
+                  {
+                      "role": "user",
+                      "content": [
+                          {"type": "text", "text": prompt_text},
+                          {
+                              "type": "image_url",
+                              "image_url": {
+                                  "url": (
+                                      f"data:image/jpeg;base64,{base64_image}"
+                                  )
+                              },
+                          },
+                      ],
+                  }
+              ],
+              max_tokens=300,
+          )
+          analisis_ia = response.choices[0].message.content
         except Exception as e:
           st.warning(
-              f"No se pudo procesar con la IA en este instante ({e}). Usando"
+              f"No se pudo procesar con ChatGPT en este instante ({e}). Usando"
               " algoritmo de respaldo."
           )
           time.sleep(2)
@@ -166,10 +142,10 @@ if image_to_process:
             "<div style='background-color:#238636; padding:15px;"
             " border-radius:8px; text-align:center; font-size:24px;"
             " font-weight:bold; color:white;'>CALL (COMPRA) 📈</div>",
+            unsafe_authorization := True,
             unsafe_allow_html=True,
         )
 
-      st.markdown(f"**Probabilidad estimada:** 90%")
       st.markdown(f"**Análisis Técnico AI:** {analisis_ia}")
       st.markdown("</div>", unsafe_allow_html=True)
 else:
