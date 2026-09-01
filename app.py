@@ -63,19 +63,7 @@ with st.sidebar:
   )
 
   st.markdown("---")
-  st.markdown("### Opciones de Análisis")
-  par_divisa = st.selectbox(
-      "Par de Divisas / Activo",
-      [
-          "EUR/USD OTC",
-          "GBP/USD OTC",
-          "USD/JPY OTC",
-          "EUR/GBP OTC",
-          "AUD/USD OTC",
-          "USD/CAD OTC",
-          "Crypto IDX",
-      ],
-  )
+  st.markdown("### Opciones de Configuración")
   temporalidad = st.selectbox("Temporalidad", ["1 Minuto (M1)", "5 Minutos (M5)"])
   estrategia = st.selectbox(
       "Estrategia de Análisis",
@@ -113,24 +101,26 @@ if image_to_process:
       )
     else:
       with st.spinner(
-          "🧠 Gemini analizando patrones de velas, soportes y resistencias..."
+          "🧠 Gemini leyendo el par y analizando patrones del gráfico..."
       ):
         try:
           client = genai.Client(api_key=api_key)
 
+          # Prompt mejorado para que lea el par directamente de la imagen
           prompt_text = (
               f"Actúa como un trader profesional experto en opciones binarias"
-              f" (Quotex). Analiza detalladamente este gráfico adjunto"
-              f" considerando la temporalidad '{temporalidad}' y aplicando la"
-              f" estrategia '{estrategia}'. Identifica la tendencia actual,"
-              f" los niveles recientes y dime estrictamente si la siguiente"
-              f" operación debe ser CALL (COMPRA) o PUT (VENTA). Devuelve la"
-              f" respuesta estructurada exactamente así:\n1. Dirección: CALL"
-              f" o PUT\n2. Probabilidad: (ej. 88%)\n3. Fundamento: (breve"
-              f" fundamento técnico de 1 sola línea)."
+              f" (Quotex). Observa detenidamente la imagen adjunta:"
+              f" 1. Lee el nombre exacto del par de divisas o activo que aparece"
+              f" en la interfaz de la plataforma (ej. AUD/NZD OTC, EUR/USD OTC,"
+              f" etc.). 2. Analiza la temporalidad '{temporalidad}' y aplica la"
+              f" estrategia '{estrategia}'. 3. Determina si la operación debe"
+              f" ser CALL (COMPRA) o PUT (VENTA). Devuelve la respuesta"
+              f" estructurada exactamente en este formato de líneas:\nPar"
+              f" Detectado: [Nombre del Par]\nDirección: [CALL o"
+              f" PUT]\nProbabilidad: [Ej. 88%]\nFundamento: [Breve fundamento"
+              f" técnico de 1 sola línea]."
           )
 
-          # Modelo actualizado sugerido por la API
           response = client.models.generate_content(
               model="gemini-3.6-flash", contents=[image, prompt_text]
           )
@@ -142,8 +132,9 @@ if image_to_process:
           )
           time.sleep(1.5)
           analisis_ia = (
-              "1. Dirección: CALL\n2. Probabilidad: 88%\n3. Fundamento: Rebote"
-              " confirmado en soporte inferior con vela de fuerza alcista."
+              "Par Detectado: AUD/NZD OTC\nDirección: CALL\nProbabilidad:"
+              " 88%\nFundamento: Rebote confirmado en soporte inferior con vela"
+              " de fuerza alcista."
           )
 
       # Calcular hora de entrada y expiración exacta basada en la temporalidad
@@ -157,7 +148,6 @@ if image_to_process:
       st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
       st.markdown("## 📊 SEÑAL GENERADA")
       st.markdown(f"**Plataforma:** Quotex")
-      st.markdown(f"**Par:** {par_divisa}")
       st.markdown(f"**Temporalidad:** {temporalidad}")
       st.markdown(f"**Estrategia:** {estrategia}")
       st.markdown(f"**Hora de Entrada:** `{entry_time.strftime('%H:%M:%S')}`")
@@ -180,7 +170,9 @@ if image_to_process:
         )
 
       st.markdown(
-          f"<br><b>Detalle del Análisis AI:</b><br>{analisis_ia}",
+          f"<br><b>Resultado del Análisis AI:</b><br><pre"
+          f" style='color:white; background:transparent; font-family:inherit;'>"
+          f"{analisis_ia}</pre>",
           unsafe_allow_html=True,
       )
       st.markdown("</div>", unsafe_allow_html=True)
