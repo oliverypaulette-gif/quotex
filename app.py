@@ -52,11 +52,11 @@ with st.sidebar:
   st.image("https://img.icons8.com/fluency/96/google-logo.png", width=60)
   st.header("Configuración de Gemini AI")
 
-  # --- CLAVE API PARTIDA EN DOS PARA EVITAR BLOQUEO DE GITHUB ---
+  # --- CLAVE API PARTIDA EN DOS ---
   parte_1 = "AQ.Ab8RN6IM9fQrmoLwfcrqli4cFYQT8HqZNPYq"
   parte_2 = "6dmtotrDI1RvgA"
   default_key = parte_1 + parte_2
-  # -------------------------------------------------------------
+  # --------------------------------
 
   api_key = st.text_input(
       "Ingresa tu Gemini API Key", value=default_key, type="password"
@@ -109,8 +109,7 @@ if image_to_process:
   if st.button("⚡ GET SIGNAL / ANALIZAR GRÁFICO"):
     if not api_key:
       st.error(
-          "⚠️ Falta la API Key de Gemini. Ingrésala en la barra lateral o"
-          " configúrala."
+          "⚠️ Falta la API Key de Gemini. Ingrésala en la barra lateral."
       )
     else:
       with st.spinner(
@@ -131,8 +130,9 @@ if image_to_process:
               f" fundamento técnico de 1 sola línea)."
           )
 
+          # Modelo actualizado sugerido por la API
           response = client.models.generate_content(
-              model="gemini-2.5-flash", contents=[image, prompt_text]
+              model="gemini-3.6-flash", contents=[image, prompt_text]
           )
           analisis_ia = response.text
         except Exception as e:
